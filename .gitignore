@@ -1,8 +1,11 @@
 /media/murphy/CEBRA_project/2020_11_9_MV1_run_brain
 /media/murphy/CEBRA_project/2020_11_9_MV1_run_brain/*
-2020_11_9_MV1_run_brain/
-2020_11_9_MV1_run_behavior/
+*_run_brain/
+*_run_behavior/
 2020_11_9_MV1_run_brain.zip
 cebra_multi_model.pt
 cebra_multi_model2.pt
 feature_labels
+output_videos*
+*.zip
+*.pb
