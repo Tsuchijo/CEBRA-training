@@ -9,3 +9,7 @@ feature_labels
 output_videos*
 *.zip
 *.pb
+output_videos*
+MV1*
+runs
+models
