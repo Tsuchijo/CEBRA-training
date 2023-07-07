@@ -87,13 +87,13 @@ def pad_data(data, pre, post):
     return np.concatenate((pre_padding, data, post_padding), axis=0)
 
 def generate_CEBRA_embeddings(model, data, session_id, offset = (2,3)):
-    data_torch = torch.empty(0,5,128,128)
+    data_torch = torch.empty(0,5,128,128).to('cuda')
     padded = pad_data(data, offset[0], offset[1])
     for i, frame in enumerate(data):
-        frame = torch.from_numpy(np.array(padded[i: i + offset[0] + offset[1]])).float().unsqueeze(0)
+        frame = torch.from_numpy(np.array(padded[i: i + offset[0] + offset[1]])).float().unsqueeze(0).to('cuda')
         data_torch = torch.cat((data_torch, frame), dim = 0)
     data_torch = data_torch.swapdims(-2, 1)
-    embedding = model[session_id](data_torch).detach().cpu().numpy().squeeze()
+    embedding = model.to('cuda')[session_id](data_torch).detach().cpu().numpy().squeeze()
     return embedding
 
 def load_model(model_path):
