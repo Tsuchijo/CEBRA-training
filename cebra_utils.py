@@ -15,8 +15,12 @@ import cebra.data
 from cebra.models.model import _OffsetModel, ConvolutionalModelMixin
 
 class ChangeOrderLayer(nn.Module):
+    def __init__(self, first_dim = -2, second_dim = 1):
+        super().__init__()
+        self.first_dim = first_dim
+        self.second_dim = second_dim
     def forward(self, x):
-        return x.movedim(-2,1)  # Permute dimensions 1 and 2
+        return x.movedim(self.first_dim, self.second_dim).squeeze() # Permute dimensions 1 and 2
 
 @cebra.models.register("convolutional-model-offset11")
 class ConvulotionalModel1(_OffsetModel, ConvolutionalModelMixin):
@@ -45,11 +49,54 @@ class ConvulotionalModel1(_OffsetModel, ConvolutionalModelMixin):
 
     def get_offset(self):
         return cebra.data.Offset(2, 3)
+    
+
+@cebra.models.register("convolutional-model-30frame")
+class ConvulotionalModel30Frame(_OffsetModel, ConvolutionalModelMixin):
+
+    def __init__(self, num_neurons, num_units, num_output, normalize=True):
+        super().__init__(
+            ## create a model which goes from a 128 x 128 image to a 1d vector
+            ## of length num_output
+            ChangeOrderLayer(1,1),
+            nn.Conv2d(30, 16, kernel_size=3, stride=1, padding=1),
+            nn.GELU(),
+            nn.MaxPool2d(kernel_size=4, stride=4),
+            nn.Conv2d(16, 16, kernel_size=3, stride=1, padding=1),
+            nn.GELU(),
+            nn.MaxPool2d(kernel_size=4, stride=4),
+            nn.Flatten(),
+            nn.GELU(),
+            nn.Linear(1024, num_units),
+            nn.GELU(),
+            nn.Linear(num_units, num_output),
+
+            num_input=num_neurons,
+            num_output=num_output,
+            normalize=normalize,
+        )
+        def get_offset(self):
+            return cebra.data.Offset(2, 3)
+
+    # ... and you can also redefine the forward method,
+    # as you would for a typical pytorch model
 
 def process_brain(brain_seq):
     brain_seq = np.array(brain_seq)
     flat_seq = np.array([(brain_frame.flatten()) for brain_frame in brain_seq])
     return flat_seq.astype(float)
+
+
+## Takes a sliding window of data and then returns a list of windows
+# data: list of data
+# window_size: size of window
+# returns: list of windows
+def bin_data(data, window_size):
+    output = []
+    for i in range(len(data) - window_size + 1):
+        output.append(data[i:i+window_size])
+    return output
+
 
 ## Loads data from a folder of TIF files
 # filepath: path to folder
