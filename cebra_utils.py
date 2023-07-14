@@ -164,5 +164,8 @@ def choose_random_window( window_size, seed, data):
     start = random.randint(0, len(data) - window_size)
     return data[start:start+window_size]
 
+def choose_first_second( window_size, data):
+    return data[0:0+window_size]
+
 def normalize_array(in_array):
     return np.array([x / np.linalg.norm(x) for x in in_array])

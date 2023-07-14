@@ -39,14 +39,24 @@ behavior_data_paths = [  data_directory + 'camera1/' + \
                      file for file in os.listdir(data_directory + 'brain/')]
 
 key_behavior = {
-    0: 'still',
-    1: 'sniffing',
-    2: 'walking',
-    3: 'grooming',
+    0: 'groom',
+    1: 'lick',
+    2: 'orofacial',
+    3: 'roll',
+    4: 'run',
+    5: 'static',
+    6: 'twitch',
 }
+cv2.namedWindow('Video')
+switch = ''
+for key, behavior in key_behavior.items():
+    switch += str(key) + ': ' + behavior + '\n'
+max_key = max(key_behavior.keys())
+cv2.createTrackbar(switch, 'Video',0, max_key,lambda x : None)
 
 for data_path in behavior_data_paths:
     # Load data
+    print('loading data')
     behavior_data, behavior_names = import_data(data_path, lambda x : x, 0, 0.2)
     labels = dict()
     print('labelling: ' + str(len(behavior_data)) + ' videos')
@@ -60,13 +70,15 @@ for data_path in behavior_data_paths:
     for video, name in zip(behavior_data, behavior_names):
         # Open the video file
         if name.split('_')[0] == 'nomove':
-            labels[name] = one_hot['still']
+            labels[name] = one_hot['static']
             continue
         while True:
             exit = False
             for frame in video:
                 # Display the frame to the user
+                cv2.namedWindow('Video')
                 cv2.imshow('Video', frame)
+                cv2.createTrackbar(switch, 'Video',0, max_key,lambda x : None)
                 key = cv2.waitKey(12) & 0xFF # Wait 12ms for user input
                 # Exit the loop and close the window when 'q' is pressed
                 if key == ord('q'):
@@ -75,6 +87,11 @@ for data_path in behavior_data_paths:
                 # if a number is pressed save that number to the labels
                 elif key >= ord('0') and key <= ord('9'):
                     labels[name] =  one_hot[key_behavior[key - ord('0')]]
+                    exit = True
+                    break
+                # if space is pressed take the label from the trackbar
+                elif key == ord(' '):
+                    labels[name] = one_hot[key_behavior[cv2.getTrackbarPos(switch, 'Video')]]
                     exit = True
                     break
 
