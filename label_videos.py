@@ -36,7 +36,7 @@ def import_data(filepath, processor, min = 0, max = 1):
 
 data_directory = '/mnt/teams/Tsuchitori/MV1_run_30hz_30frame_brain2behav_DFF_new/'
 behavior_data_paths = [  data_directory + 'camera1/' + \
-                     file for file in os.listdir(data_directory + 'brain/')]
+                     file for file in os.listdir(data_directory + 'brain/')][2:]
 
 key_behavior = {
     0: 'groom',
